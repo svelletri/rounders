@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <title>Rounders</title>
+
+  <!-- PWA / Home Screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Rounders">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#f5f0fa">
+
+  <!--
+    REPLACE THE URL BELOW with your icon URL.
+    Run logIconUrl() in Apps Script editor to get it, e.g.:
+    https://lh3.googleusercontent.com/d/XXXXXXXXX=s180
+  -->
+  <link rel="apple-touch-icon" sizes="180x180" href="YOUR_ICON_URL_HERE">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #f5f0fa; }
+    iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+  <!--
+    REPLACE THE URL BELOW with your Apps Script web app URL, e.g.:
+    https://script.google.com/macros/s/XXXXXXXXX/exec
+  -->
+  <iframe src="YOUR_APPS_SCRIPT_URL_HERE" allow="clipboard-write"></iframe>
+</body>
+</html>
