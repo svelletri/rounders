@@ -17,7 +17,7 @@
     Run logIconUrl() in Apps Script editor to get it, e.g.:
     https://lh3.googleusercontent.com/d/XXXXXXXXX=s180
   -->
-  <link rel="apple-touch-icon" sizes="180x180" href="YOUR_ICON_URL_HERE">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/1-VBa6-xUDYgETMJ759cGWbB5mvyTO6V2=s180">
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,6 +30,6 @@
     REPLACE THE URL BELOW with your Apps Script web app URL, e.g.:
     https://script.google.com/macros/s/XXXXXXXXX/exec
   -->
-  <iframe src="YOUR_APPS_SCRIPT_URL_HERE" allow="clipboard-write"></iframe>
+  <iframe src="https://script.google.com/macros/s/AKfycbwj3ZJsRb4vuS0OH8z2kLHWtNtujp8o6YmuZ9MRgQrvHzlq3VTBYS0Xa_B8FqN2mRrv/exec" allow="clipboard-write"></iframe>
 </body>
 </html>
