@@ -14,8 +14,7 @@
 
   <!--
     REPLACE THE URL BELOW with your icon URL.
-    Run logIconUrl() in Apps Script editor to get it, e.g.:
-    https://lh3.googleusercontent.com/d/XXXXXXXXX=s180
+    Run logIconUrl() in Apps Script editor to get it.
   -->
   <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/1-VBa6-xUDYgETMJ759cGWbB5mvyTO6V2=s180">
 
@@ -26,10 +25,19 @@
       background: #f5f0fa;
       display: flex; align-items: center; justify-content: center;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #7c3af2;
+      color: #333;
     }
-    .loading { text-align: center; }
-    .loading span { font-size: 18px; font-weight: 600; }
+    .container { text-align: center; padding: 32px; max-width: 360px; }
+    .logo { font-size: 48px; margin-bottom: 16px; }
+    h1 { color: #7c3af2; font-size: 28px; margin-bottom: 24px; }
+    .instructions { font-size: 15px; line-height: 1.6; color: #666; margin-bottom: 24px; }
+    .step { margin-bottom: 8px; }
+    .open-btn {
+      display: inline-block; padding: 14px 32px;
+      background: #7c3af2; color: #fff; text-decoration: none;
+      border-radius: 12px; font-size: 16px; font-weight: 600;
+    }
+    .loading span { font-size: 18px; font-weight: 600; color: #7c3af2; }
   </style>
 
   <script>
@@ -37,13 +45,27 @@
     var APP_URL = 'https://script.google.com/macros/s/AKfycbwj3ZJsRb4vuS0OH8z2kLHWtNtujp8o6YmuZ9MRgQrvHzlq3VTBYS0Xa_B8FqN2mRrv/exec';
 
     window.onload = function() {
-      window.location.replace(APP_URL);
+      // Launched from home screen — redirect to app
+      if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+        window.location.replace(APP_URL);
+        return;
+      }
+      // Opened in browser — show add-to-home-screen instructions
+      document.getElementById('install').style.display = 'flex';
     };
   </script>
 </head>
 <body>
-  <div class="loading">
-    <span>Loading Rounders...</span>
+  <div id="install" class="container" style="display:none;">
+    <div class="logo">♠</div>
+    <h1>Rounders</h1>
+    <div class="instructions">
+      <div class="step">To install on your home screen:</div>
+      <div class="step">1. Tap the <strong>Share</strong> button ↑</div>
+      <div class="step">2. Tap <strong>Add to Home Screen</strong></div>
+      <div class="step">3. Tap <strong>Add</strong></div>
+    </div>
+    <a class="open-btn" href="javascript:window.location.replace(APP_URL)">Open App in Browser</a>
   </div>
 </body>
 </html>
