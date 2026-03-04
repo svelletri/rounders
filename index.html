@@ -49,21 +49,18 @@
     var APP_URL = 'https://script.google.com/macros/s/AKfycbwj3ZJsRb4vuS0OH8z2kLHWtNtujp8o6YmuZ9MRgQrvHzlq3VTBYS0Xa_B8FqN2mRrv/exec';
 
     // ═══ Storage Bridge ═══
-    // Proxies localStorage for the iframe (Safari blocks cross-origin localStorage)
+    // Reply to the actual source window (handles nested iframes)
     window.addEventListener('message', function(e) {
       if (!e.data || !e.data.type) return;
 
       if (e.data.type === 'LS_INIT') {
-        // Iframe requesting all stored data
+        // Iframe requesting all stored data — reply to the source directly
         var store = {};
         for (var i = 0; i < localStorage.length; i++) {
           var k = localStorage.key(i);
           store[k] = localStorage.getItem(k);
         }
-        var iframe = document.getElementById('app');
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({ type: 'LS_DATA', store: store }, '*');
-        }
+        e.source.postMessage({ type: 'LS_DATA', store: store }, '*');
       }
 
       if (e.data.type === 'LS_SET' && e.data.key) {
