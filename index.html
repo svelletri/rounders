@@ -48,10 +48,37 @@
     // REPLACE THE URL BELOW with your Apps Script web app URL
     var APP_URL = 'https://script.google.com/macros/s/AKfycbwj3ZJsRb4vuS0OH8z2kLHWtNtujp8o6YmuZ9MRgQrvHzlq3VTBYS0Xa_B8FqN2mRrv/exec';
 
+    // ═══ Storage Bridge ═══
+    // Proxies localStorage for the iframe (Safari blocks cross-origin localStorage)
+    window.addEventListener('message', function(e) {
+      if (!e.data || !e.data.type) return;
+
+      if (e.data.type === 'LS_INIT') {
+        // Iframe requesting all stored data
+        var store = {};
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          store[k] = localStorage.getItem(k);
+        }
+        var iframe = document.getElementById('app');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'LS_DATA', store: store }, '*');
+        }
+      }
+
+      if (e.data.type === 'LS_SET' && e.data.key) {
+        localStorage.setItem(e.data.key, e.data.value);
+      }
+
+      if (e.data.type === 'LS_REMOVE' && e.data.key) {
+        localStorage.removeItem(e.data.key);
+      }
+    });
+
     window.onload = function() {
       var standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
       if (standalone) {
-        // Launched from home screen — load app in iframe (stays in standalone mode)
+        // Launched from home screen — load app in iframe
         var iframe = document.getElementById('app');
         iframe.src = APP_URL;
         iframe.style.display = 'block';
