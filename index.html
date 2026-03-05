@@ -16,7 +16,7 @@
     REPLACE THE URL BELOW with your icon URL.
     Run logIconUrl() in Apps Script editor to get it.
   -->
-  <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/1ASnyVaIGtcHfklNGBU4eBPQ65GFuwsHI=s180">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/1-VBa6-xUDYgETMJ759cGWbB5mvyTO6V2=s180">
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -48,28 +48,6 @@
     // REPLACE THE URL BELOW with your Apps Script web app URL
     var APP_URL = 'https://script.google.com/macros/s/AKfycbwj3ZJsRb4vuS0OH8z2kLHWtNtujp8o6YmuZ9MRgQrvHzlq3VTBYS0Xa_B8FqN2mRrv/exec';
 
-    // Collect all poker_* data from localStorage to pass to the iframe
-    function getStorageData() {
-      var store = {};
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (k && k.indexOf('poker_') === 0) {
-          store[k] = localStorage.getItem(k);
-        }
-      }
-      return store;
-    }
-
-    // Build the iframe URL with device token and storage data
-    function buildAppUrl() {
-      var token = getDeviceToken();
-      var store = getStorageData();
-      var sd = encodeURIComponent(JSON.stringify(store));
-      var sep = APP_URL.indexOf('?') >= 0 ? '&' : '?';
-      return APP_URL + sep + 'dt=' + encodeURIComponent(token) + '&sd=' + sd;
-    }
-
-    // Generate/retrieve a stable device token
     function getDeviceToken() {
       var key = 'poker_deviceToken';
       var token = localStorage.getItem(key);
@@ -80,26 +58,71 @@
       return token;
     }
 
-    // Listen for storage updates from the app iframe
+    // Collect all poker_* data, base64 encode in the wrapper (not Code.gs)
+    function getStorageBase64() {
+      var store = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('poker_') === 0) {
+          store[k] = localStorage.getItem(k);
+        }
+      }
+      try {
+        return btoa(unescape(encodeURIComponent(JSON.stringify(store))));
+      } catch(e) {
+        return '';
+      }
+    }
+
+    function buildAppUrl() {
+      var token = getDeviceToken();
+      var sd = getStorageBase64();
+      var sep = APP_URL.indexOf('?') >= 0 ? '&' : '?';
+      var url = APP_URL + sep + 'dt=' + encodeURIComponent(token);
+      if (sd) url += '&sd=' + encodeURIComponent(sd);
+      return url;
+    }
+
+    // Listen for storage updates from the app iframe via postMessage
+    // This handles individual saves from the app
     window.addEventListener('message', function(e) {
       if (!e.data || !e.data.type) return;
       if (e.data.type === 'LS_SET' && e.data.key) {
-        localStorage.setItem(e.data.key, e.data.value);
+        try { localStorage.setItem(e.data.key, e.data.value); } catch(ex) {}
       }
       if (e.data.type === 'LS_REMOVE' && e.data.key) {
-        localStorage.removeItem(e.data.key);
+        try { localStorage.removeItem(e.data.key); } catch(ex) {}
+      }
+      // Bulk save — app sends entire storage state
+      if (e.data.type === 'LS_BULK' && e.data.store) {
+        try {
+          // Clear old poker_ keys first
+          var toRemove = [];
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && k.indexOf('poker_') === 0 && k !== 'poker_deviceToken') {
+              toRemove.push(k);
+            }
+          }
+          toRemove.forEach(function(k) { localStorage.removeItem(k); });
+          // Write new data
+          var store = e.data.store;
+          for (var key in store) {
+            if (store.hasOwnProperty(key)) {
+              localStorage.setItem(key, store[key]);
+            }
+          }
+        } catch(ex) {}
       }
     });
 
     window.onload = function() {
       var standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
       if (standalone) {
-        // Launched from home screen — load app in iframe with all persisted data
         var iframe = document.getElementById('app');
         iframe.src = buildAppUrl();
         iframe.style.display = 'block';
       } else {
-        // Opened in browser — show install instructions
         document.getElementById('install').style.display = 'flex';
       }
     };
