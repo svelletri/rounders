@@ -48,8 +48,28 @@
     // REPLACE THE URL BELOW with your Apps Script web app URL
     var APP_URL = 'https://script.google.com/macros/s/AKfycbwj3ZJsRb4vuS0OH8z2kLHWtNtujp8o6YmuZ9MRgQrvHzlq3VTBYS0Xa_B8FqN2mRrv/exec';
 
-    // Generate/retrieve a stable device token in the wrapper's localStorage
-    // (The app iframe can't use localStorage in Safari, so we own the token here)
+    // Collect all poker_* data from localStorage to pass to the iframe
+    function getStorageData() {
+      var store = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('poker_') === 0) {
+          store[k] = localStorage.getItem(k);
+        }
+      }
+      return store;
+    }
+
+    // Build the iframe URL with device token and storage data
+    function buildAppUrl() {
+      var token = getDeviceToken();
+      var store = getStorageData();
+      var sd = encodeURIComponent(JSON.stringify(store));
+      var sep = APP_URL.indexOf('?') >= 0 ? '&' : '?';
+      return APP_URL + sep + 'dt=' + encodeURIComponent(token) + '&sd=' + sd;
+    }
+
+    // Generate/retrieve a stable device token
     function getDeviceToken() {
       var key = 'poker_deviceToken';
       var token = localStorage.getItem(key);
@@ -60,14 +80,23 @@
       return token;
     }
 
+    // Listen for storage updates from the app iframe
+    window.addEventListener('message', function(e) {
+      if (!e.data || !e.data.type) return;
+      if (e.data.type === 'LS_SET' && e.data.key) {
+        localStorage.setItem(e.data.key, e.data.value);
+      }
+      if (e.data.type === 'LS_REMOVE' && e.data.key) {
+        localStorage.removeItem(e.data.key);
+      }
+    });
+
     window.onload = function() {
       var standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
       if (standalone) {
-        // Launched from home screen — pass device token via URL parameter
-        var token = getDeviceToken();
-        var url = APP_URL + (APP_URL.indexOf('?') >= 0 ? '&' : '?') + 'dt=' + encodeURIComponent(token);
+        // Launched from home screen — load app in iframe with all persisted data
         var iframe = document.getElementById('app');
-        iframe.src = url;
+        iframe.src = buildAppUrl();
         iframe.style.display = 'block';
       } else {
         // Opened in browser — show install instructions
