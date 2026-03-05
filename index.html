@@ -4,48 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
   <title>Rounders</title>
-
-  <!-- PWA / Home Screen -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Rounders">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#f5f0fa">
-
-  <!--
-    REPLACE THE URL BELOW with your icon URL.
-    Run logIconUrl() in Apps Script editor to get it.
-  -->
+  <!-- REPLACE with your icon URL from logIconUrl() -->
   <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/1-VBa6-xUDYgETMJ759cGWbB5mvyTO6V2=s180">
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #f5f0fa; }
-    iframe {
-      width: 100%; height: 100%; border: none;
-      display: none;
-    }
-    .container {
-      display: none;
-      height: 100vh;
-      align-items: center; justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #333;
-    }
+    iframe { width: 100%; height: 100%; border: none; display: none; }
+    .container { display: none; height: 100vh; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #333; }
     .inner { text-align: center; padding: 32px; max-width: 360px; }
     .logo { font-size: 48px; margin-bottom: 16px; }
     h1 { color: #7c3af2; font-size: 28px; margin-bottom: 24px; }
     .instructions { font-size: 15px; line-height: 1.6; color: #666; margin-bottom: 24px; }
     .step { margin-bottom: 8px; }
-    .open-btn {
-      display: inline-block; padding: 14px 32px;
-      background: #7c3af2; color: #fff; text-decoration: none;
-      border-radius: 12px; font-size: 16px; font-weight: 600;
-    }
+    .open-btn { display: inline-block; padding: 14px 32px; background: #7c3af2; color: #fff; text-decoration: none; border-radius: 12px; font-size: 16px; font-weight: 600; }
   </style>
-
   <script>
-    // REPLACE THE URL BELOW with your Apps Script web app URL
+    // REPLACE with your Apps Script web app URL
     var APP_URL = 'https://script.google.com/macros/s/AKfycbwj3ZJsRb4vuS0OH8z2kLHWtNtujp8o6YmuZ9MRgQrvHzlq3VTBYS0Xa_B8FqN2mRrv/exec';
 
     function getDeviceToken() {
@@ -58,69 +37,13 @@
       return token;
     }
 
-    // Collect all poker_* data, base64 encode in the wrapper (not Code.gs)
-    function getStorageBase64() {
-      var store = {};
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (k && k.indexOf('poker_') === 0) {
-          store[k] = localStorage.getItem(k);
-        }
-      }
-      try {
-        return btoa(unescape(encodeURIComponent(JSON.stringify(store))));
-      } catch(e) {
-        return '';
-      }
-    }
-
-    function buildAppUrl() {
-      var token = getDeviceToken();
-      var sd = getStorageBase64();
-      var sep = APP_URL.indexOf('?') >= 0 ? '&' : '?';
-      var url = APP_URL + sep + 'dt=' + encodeURIComponent(token);
-      if (sd) url += '&sd=' + encodeURIComponent(sd);
-      return url;
-    }
-
-    // Listen for storage updates from the app iframe via postMessage
-    // This handles individual saves from the app
-    window.addEventListener('message', function(e) {
-      if (!e.data || !e.data.type) return;
-      if (e.data.type === 'LS_SET' && e.data.key) {
-        try { localStorage.setItem(e.data.key, e.data.value); } catch(ex) {}
-      }
-      if (e.data.type === 'LS_REMOVE' && e.data.key) {
-        try { localStorage.removeItem(e.data.key); } catch(ex) {}
-      }
-      // Bulk save — app sends entire storage state
-      if (e.data.type === 'LS_BULK' && e.data.store) {
-        try {
-          // Clear old poker_ keys first
-          var toRemove = [];
-          for (var i = 0; i < localStorage.length; i++) {
-            var k = localStorage.key(i);
-            if (k && k.indexOf('poker_') === 0 && k !== 'poker_deviceToken') {
-              toRemove.push(k);
-            }
-          }
-          toRemove.forEach(function(k) { localStorage.removeItem(k); });
-          // Write new data
-          var store = e.data.store;
-          for (var key in store) {
-            if (store.hasOwnProperty(key)) {
-              localStorage.setItem(key, store[key]);
-            }
-          }
-        } catch(ex) {}
-      }
-    });
-
     window.onload = function() {
       var standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
       if (standalone) {
+        var token = getDeviceToken();
+        var sep = APP_URL.indexOf('?') >= 0 ? '&' : '?';
         var iframe = document.getElementById('app');
-        iframe.src = buildAppUrl();
+        iframe.src = APP_URL + sep + 'dt=' + encodeURIComponent(token);
         iframe.style.display = 'block';
       } else {
         document.getElementById('install').style.display = 'flex';
@@ -130,7 +53,6 @@
 </head>
 <body>
   <iframe id="app" allow="clipboard-write; web-share"></iframe>
-
   <div id="install" class="container">
     <div class="inner">
       <div class="logo">♠</div>
